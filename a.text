@@ -1,0 +1,56 @@
+Next.js 14.2.32 → v16 変更点一覧
+1. ランタイム・依存関係の要件変更
+項目変更内容Node.js20.9以上が必須（Node.js 18サポート終了）React / React DOM19以上が必須TypeScript5.1以上が必須@types/react, @types/react-dom最新版へのアップグレードが必要
+
+2. Async Request APIs（破壊的変更・最重要）
+以下のAPIが非同期（Promise）に変更。v16では同期アクセスが完全に削除されエラーになる。
+API変更内容cookies()await cookies() が必須headers()await headers() が必須draftMode()await draftMode() が必須params（layout.js, page.js, route.js等）await props.params が必須searchParams（page.js）await props.searchParams が必須
+修正例（params）：
+tsx// Before (v14)
+export default function Page({ params }: { params: { slug: string } }) {
+  const { slug } = params
+}
+
+// After (v16)
+type Params = Promise<{ slug: string }>
+
+export default async function Page({ params }: { params: Params }) {
+  const { slug } = await params
+}
+
+3. キャッシュ動作の変更（破壊的変更）
+項目v14v16fetchリクエストデフォルトでキャッシュデフォルトでキャッシュしないRoute Handlers の GETデフォルトでキャッシュデフォルトでキャッシュしないClient Router Cacheページセグメントを再利用再利用しない（戻る/進むは除く）
+fetchをキャッシュしたい場合：
+tsxconst data = await fetch('https://...', { cache: 'force-cache' })
+
+4. Turbopackがデフォルトに
+項目変更内容next dev / next buildTurbopackがデフォルトで使用される--turbopack フラグ不要になったWebpackを使いたい場合next build --webpack を指定
+
+5. React 19関連の変更
+項目変更内容useFormState非推奨 → useActionState を使用useFormStatusdata, method, action プロパティが追加
+
+6. next.config.js の設定変更
+旧設定新設定experimental.turbopackturbopack（トップレベルに移動）experimental.bundlePagesExternalsbundlePagesRouterDependenciesexperimental.serverComponentsExternalPackagesserverExternalPackagesexperimental.ppr削除 → cacheComponents を使用experimental.dynamicIO削除 → cacheComponents を使用eslint オプション削除
+
+7. 削除された機能
+機能代替手段next lint コマンドESLint CLIを直接使用serverRuntimeConfig / publicRuntimeConfig環境変数を使用AMPサポート削除（代替なし）@next/font パッケージnext/font を使用runtime: 'experimental-edge'runtime: 'edge' を使用Speed Insights自動計測手動でVercel Speed Insightsを設定unstable_cacheLife / unstable_cacheTagcacheLife / cacheTag（unstable_接頭辞削除）
+
+8. ESLint関連
+項目変更内容next lint削除。ESLint CLIを直接使用ESLint設定形式Flat Configがデフォルトnext buildリントを実行しなくなった
+
+9. Parallel Routes
+項目変更内容default.js全てのParallel Routeスロットで必須。ないとビルドエラー
+
+10. 開発環境の変更
+項目変更内容.next/dev開発ビルドの出力先が分離されたnext dev と next build同時実行可能に
+
+11. その他の変更
+項目変更内容devIndicators の appIsrStatus, buildActivity, buildActivityPosition削除scroll-behavior: smoothNext.jsがオーバーライドしなくなったSassインポートチルダ（~）プレフィックスはTurbopackで非サポート
+
+プロジェクトに影響する可能性が高い項目（優先度順）
+
+Async Request APIs — cookies(), headers(), params, searchParams を使用している箇所すべて
+キャッシュ動作の変更 — fetchやRoute Handlersのキャッシュ戦略の見直し
+Node.js / React のバージョン — 環境の更新
+ESLint設定 — next lint を使用していた場合の移行
+next.config.js — 設定オプションの名前変更
