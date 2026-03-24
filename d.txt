@@ -1,38 +1,15 @@
-| 項番 | 分類 | 項目 | 対応要否 |
-|------|------|------|----------|
-| 1-1 | ランタイム・依存関係 | Node.js 20.9以上が必須 | 不要 |
-| 1-2 | ランタイム・依存関係 | React / React DOM 19以上が必須 | 必須 |
-| 1-3 | ランタイム・依存関係 | TypeScript 5.1以上が必須 | 不要 |
-| 1-4 | ランタイム・依存関係 | @types/react, @types/react-dom 最新版へのアップグレード | 必須 |
-| 2-1 | Async Request APIs | cookies() の非同期化 | 不要 |
-| 2-2 | Async Request APIs | headers() の非同期化 | 不要 |
-| 2-3 | Async Request APIs | draftMode() の非同期化 | 不要 |
-| 2-4 | Async Request APIs | params の非同期化 | 必須 |
-| 2-5 | Async Request APIs | searchParams の非同期化 | 不要 |
-| 3-1 | キャッシュ動作 | fetch リクエストのキャッシュデフォルト変更 | 不要 |
-| 3-2 | キャッシュ動作 | Route Handlers GET のキャッシュデフォルト変更 | 要確認 |
-| 3-3 | キャッシュ動作 | Client Router Cache の挙動変更 | 不要 |
-| 4-1 | Turbopack | Turbopackがデフォルト使用 | 不要 |
-| 5-1 | React 19関連 | useFormState → useActionState | 不要 |
-| 5-2 | React 19関連 | useFormStatus プロパティ追加 | 不要 |
-| 6-1 | next.config.js | experimental.turbopack | 不要 |
-| 6-2 | next.config.js | experimental.bundlePagesExternals | 不要 |
-| 6-3 | next.config.js | experimental.serverComponentsExternalPackages | 不要 |
-| 6-4 | next.config.js | experimental.ppr / experimental.dynamicIO 削除 | 不要 |
-| 6-5 | next.config.js | eslint オプション削除 | 必須 |
-| 7-1 | 削除された機能 | next lint コマンド削除 | 必須 |
-| 7-2 | 削除された機能 | serverRuntimeConfig / publicRuntimeConfig 削除 | 不要 |
-| 7-3 | 削除された機能 | AMPサポート削除 | 不要 |
-| 7-4 | 削除された機能 | @next/font パッケージ削除 | 不要 |
-| 7-5 | 削除された機能 | runtime: 'experimental-edge' 削除 | 不要 |
-| 7-6 | 削除された機能 | Speed Insights 自動計測削除 | 不要 |
-| 7-7 | 削除された機能 | unstable_cacheLife / unstable_cacheTag 削除 | 不要 |
-| 8-1 | ESLint関連 | next lint 削除。ESLint CLIを直接使用 | 必須 |
-| 8-2 | ESLint関連 | ESLint設定形式 Flat Config がデフォルト | 必須 |
-| 8-3 | ESLint関連 | next build がリントを実行しなくなった | 不要 |
-| 9-1 | Parallel Routes | default.js が全Parallel Routeスロットで必須 | 不要 |
-| 10-1 | 開発環境 | .next/dev 開発ビルドの出力先分離 | 不要 |
-| 10-2 | 開発環境 | next dev と next build 同時実行可能 | 不要 |
-| 11-1 | その他 | devIndicators の一部削除 | 不要 |
-| 11-2 | その他 | scroll-behavior: smooth オーバーライド廃止 | 不要 |
-| 11-3 | その他 | Sassインポート チルダ（~）非サポート | 不要 |
+### Next.js v16 バージョンアップ移行スケジュール（概算）
+
+* **前提条件:** フロントエンド初学者 / 1日6時間稼働
+* **全体工数:** 約35営業日（1.5ヶ月〜2ヶ月弱）
+
+| フェーズ | 期間（目安） | 主な作業内容 | 時間を要する要因（リスク） |
+| :--- | :--- | :--- | :--- |
+| **1. 依存関係の更新** | 5日 (第1週) | React 19およびNext.js v16への更新、他パッケージの競合解消 | 既存ライブラリがReact 19に未対応だった場合の調査・代替対応（依存関係の沼） |
+| **2. ESLint移行** | 2日 (第2週) | Flat Config（`eslint.config.js`）への完全移行と動作確認 | 新しい設定記法の学習コスト、および他ツールとの連携トラブル解消 |
+| **3. コード改修** | 18日 (第2〜5週) | `params`のPromise化対応（約80ファイル）、キャッシュ設定の見直し | ファイル数が多く、一部の型変更に伴う他コンポーネントへの連鎖的なTypeScript型エラーの解消（型パズル）に多大な時間を要する |
+| **4. ビルド・テスト** | 5日 (第6週) | 本番ビルド（`next build`）の実行、および全体結合テスト | 開発環境では発覚しない、厳格な静的解析によるビルド時エラーの潰し込み |
+| **5. 予備日・レビュー** | 5日 (第7週) | 進捗遅延の吸収、Pull Requestの作成およびレビュー対応 | 想定外のエラー調査や、指摘事項の修正対応 |
+
+**【上司への補足ポイント（一言まとめ）】**
+「依存関係の更新や設定ファイルの移行は短期集中で完了させる想定だが、**影響を受けるファイル数の多さ（約80ファイル）と、それに伴うTypeScriptの連鎖的な型エラー解消（フェーズ3）**に最も実作業時間を要する見込みである。初学者が確実にバグを潰し込みながら進めるため、コード改修期間を最も手厚く設定している」と申し添えることを推奨する。
